@@ -1,0 +1,23 @@
+Arduino Uno
+HC-SR04 Ultrasonic Sensor
+SG90 Servo Motor
+L298N Motor Driver
+2× DC Gear Motors
+Robot Chassis + Wheels
+Caster Wheel
+Breadboard
+Jumper Wires
+Li-Ion Battery + Case 
+Explanation
+Obstacle Avoiding Robotic Vehicle — Component Explanation
+
+Arduino Uno — The brain of the robot; processes sensor data and sends commands to the motor driver and servo.
+HC-SR04 Ultrasonic Sensor — Measures distance to obstacles by emitting ultrasonic pulses and calculating the echo return time.
+SG90 Servo Motor — Rotates the ultrasonic sensor left and right to scan the surroundings for a wider field of view.
+L298N Motor Driver — Acts as a bridge between Arduino and the DC motors, controlling speed and direction of both wheels.
+2× DC Gear Motors — Drive the left and right wheels, enabling forward, backward, and turning motion.
+Robot Chassis + Wheels — The physical frame that holds all components together and provides the rolling base.
+Caster Wheel — A free-rotating support wheel at the front/rear that provides balance and smooth movement.
+Breadboard — Used for making temporary circuit connections without soldering.
+Jumper Wires — Connect all components together across the breadboard and Arduino pins.
+Li-Ion Battery + Case — Powers the entire robot, offering a rechargeable and stable power supply.
