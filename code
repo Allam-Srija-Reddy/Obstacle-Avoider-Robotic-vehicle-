@@ -1,0 +1,110 @@
+#include <Servo.h>
+#include <SoftwareSerial.h>
+
+// Bluetooth Pins (Connect HC-05 TX to Pin 2, RX to Pin 3)
+SoftwareSerial BTSerial(2, 3); 
+
+// Motor Driver L298N Pins
+const int LeftMotorForward = 7;
+const int LeftMotorBackward = 6;
+const int RightMotorForward = 5;
+const int RightMotorBackward = 4;
+
+// Ultrasonic & Servo
+const int trigPin = 9;
+const int echoPin = 8;
+Servo servo_motor;
+
+char command;
+bool autonomousMode = false;
+
+void setup() {
+  pinMode(RightMotorForward, OUTPUT);
+  pinMode(LeftMotorForward, OUTPUT);
+  pinMode(LeftMotorBackward, OUTPUT);
+  pinMode(RightMotorBackward, OUTPUT);
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+
+  BTSerial.begin(9600);
+  servo_motor.attach(10);
+  servo_motor.write(90);
+}
+
+void loop() {
+  if (BTSerial.available() > 0) {
+    command = BTSerial.read();
+    stopMotors(); // Stop on every new command for safety
+
+    switch (command) {
+      case 'F': autonomousMode = false; moveForward(); break;
+      case 'B': autonomousMode = false; moveBackward(); break;
+      case 'L': autonomousMode = false; turnLeft(); break;
+      case 'R': autonomousMode = false; turnRight(); break;
+      case 'S': autonomousMode = false; stopMotors(); break;
+      case 'U': autonomousMode = true; break; // Toggle Autonomous
+    }
+  }
+
+  if (autonomousMode) {
+    obstacleAvoidanceLogic();
+  }
+}
+
+void obstacleAvoidanceLogic() {
+  int distance = readPing();
+  if (distance <= 25) {
+    stopMotors();
+    delay(300);
+    moveBackward();
+    delay(400);
+    stopMotors();
+    
+    int distR = lookRight();
+    int distL = lookLeft();
+
+    if (distR >= distL) {
+      turnRight();
+      delay(500); 
+    } else {
+      turnLeft();
+      delay(500);
+    }
+    stopMotors();
+  } else {
+    moveForward();
+  }
+}
+
+// --- Movement Functions ---
+void moveForward() {
+  digitalWrite(LeftMotorForward, HIGH); digitalWrite(RightMotorForward, HIGH);
+  digitalWrite(LeftMotorBackward, LOW); digitalWrite(RightMotorBackward, LOW);
+}
+void moveBackward() {
+  digitalWrite(LeftMotorBackward, HIGH); digitalWrite(RightMotorBackward, HIGH);
+  digitalWrite(LeftMotorForward, LOW); digitalWrite(RightMotorForward, LOW);
+}
+void turnRight() {
+  digitalWrite(LeftMotorForward, HIGH); digitalWrite(RightMotorBackward, HIGH);
+  digitalWrite(LeftMotorBackward, LOW); digitalWrite(RightMotorForward, LOW);
+}
+void turnLeft() {
+  digitalWrite(LeftMotorBackward, HIGH); digitalWrite(RightMotorForward, HIGH);
+  digitalWrite(LeftMotorForward, LOW); digitalWrite(RightMotorBackward, LOW);
+}
+void stopMotors() {
+  digitalWrite(RightMotorForward, LOW); digitalWrite(LeftMotorForward, LOW);
+  digitalWrite(RightMotorBackward, LOW); digitalWrite(LeftMotorBackward, LOW);
+}
+
+// --- Sensor Functions ---
+int lookRight() { servo_motor.write(10); delay(500); int d = readPing(); servo_motor.write(90); return d; }
+int lookLeft() { servo_motor.write(170); delay(500); int d = readPing(); servo_motor.write(90); return d; }
+int readPing() {
+  digitalWrite(trigPin, LOW); delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH); delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  long duration = pulseIn(echoPin, HIGH);
+  return duration * 0.034 / 2;
+}
